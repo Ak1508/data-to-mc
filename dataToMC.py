@@ -115,9 +115,6 @@ for histo in histo_mc:
     histo_mc[histo].SetLineColor(4)
     histo_mc[histo].SetLineWidth(2)
 
-    #histo_mc[histo].GetXaxis().SetTitleFont(22)
-    #histo_mc[histo].GetYaxis().SetTitleFont(22)
-
     histo_mc[histo].GetXaxis().SetTitleSize(0.05)
     histo_mc[histo].GetYaxis().SetTitleSize(0.05)
     
@@ -127,9 +124,6 @@ for histo in histo_data:
     histo_data[histo].SetFillColor(3)
     histo_data[histo].SetLineColor(3)
 
-    #histo_data[histo].GetXaxis().SetTitleFont(22)
-    #histo_data[histo].GetYaxis().SetTitleFont(22)
-
     histo_data[histo].GetXaxis().SetTitleSize(0.05)
     histo_data[histo].GetYaxis().SetTitleSize(0.05)
 
@@ -137,6 +131,7 @@ for histo in histo_data:
 
 c1    = R.TCanvas() 
 c1.Divide(2,3)
+
 c1.cd(1)
 histo_mc['hdp'].Draw()
 histo_data['tmp_hdp'].Draw("hist same")
@@ -147,47 +142,95 @@ legend.AddEntry(histo_data['tmp_hdp'],'Data', 'f')
 legend.Draw()
 
 c1.cd(2)
-histo_mc['hyrec'].Draw()
+histo_ratio['hdp_ratio'] = histo_data['tmp_hdp'].Clone("hdp_ratio")
+histo_ratio['hdp_ratio'].Divide(histo_mc['hdp'])
+histo_ratio['hdp_ratio'].Draw("ep")
+histo_ratio['hdp_ratio'].SetTitle(";[data/MC]    #delta;ratio")
 
-histo_data['tmp_hytar'].Draw('hist same')
 
 c1.cd(3)
 histo_mc['hyprec'].Draw()
 histo_data['tmp_hyptar'].Draw('hist same')
 
 c1.cd(4)
-histo_mc['hxprec'].Draw()
-histo_data['tmp_hxptar'].Draw('hist same')
+histo_ratio['hyptar_ratio'] = histo_data['tmp_hyptar'].Clone('yptar_ratio')
+histo_ratio['hyptar_ratio'].Divide(histo_mc['hyprec'])
+histo_ratio['hyptar_ratio'].Draw("ep")
+histo_ratio['hyptar_ratio'].SetTitle("; [data/MC]   yptar; ratio")
+
+
+
+'''
+c1.cd(4)
+'''
 
 c1.cd(5)
 histo_mc['hw2'].Draw()
 histo_data['tmp_hw2'].Draw('hist same')
 
-#===================Plots for focal plane ==============================
-c2 = R.TCanvas()
-c2.Divide(1,2)
-c2.cd(1)
-histo_mc['hyfoc'].Draw()
-histo_data['tmp_hyfoc'].Draw('hist same')
 
-legend1 = R.TLegend(0.6,0.6,0.7,0.8)
+c1.cd(6)
+histo_ratio['hw2_ratio'] = histo_data['tmp_hw2'].Clone('hw2_ratio')
+histo_ratio['hw2_ratio'].Divide(histo_mc['hw2'])
+histo_ratio['hw2_ratio'].Draw("ep")
+histo_ratio['hw2_ratio'].SetTitle("; [data/MC]   W^{2}; ratio")
+
+
+
+c2 = R.TCanvas()
+c2.Divide(2,3)
+
+c2.cd(1)
+histo_mc['hxprec'].Draw()
+histo_data['tmp_hxptar'].Draw('hist same')
+
+'''
+histo_mc['hyfoc'].Draw()
+histo_data['tmp_hyfoc'].Draw('hist same')'''
+
+legend1 = R.TLegend(0.7,0.6,0.79,0.8)
 legend1.AddEntry(histo_mc['hyfoc'], 'MC', 'l')
 legend1.AddEntry(histo_data['tmp_hyfoc'],'Data', 'f')
 legend1.Draw()
 
+
 c2.cd(2)
+histo_ratio['hxptar_ratio'] =  histo_data['tmp_hxptar'].Clone('xptar_ratio')
+histo_ratio['hxptar_ratio'].Divide(histo_mc['hxprec'])
+histo_ratio['hxptar_ratio'].Draw("ep")
+histo_ratio['hxptar_ratio'].SetTitle(";[data/MC]   xptar ; ratio") 
+
+c2.cd(3)
+histo_mc['hyrec'].Draw()
+histo_data['tmp_hytar'].Draw('hist same')
+
+
+
+c2.cd(4)
+histo_ratio['hytar_ratio'] =  histo_data['tmp_hytar'].Clone('ytar_ratio')
+histo_ratio['hytar_ratio'].Divide(histo_mc['hyrec'])
+histo_ratio['hytar_ratio'].Draw("ep")
+histo_ratio['hytar_ratio'].SetTitle(";[data/MC]   ytar ; ratio") 
+
+c2.cd(5)
 histo_mc['hxfoc'].Draw()
 histo_data['tmp_hxfoc'].Draw('hist same')
 
-#===========================Plots for ratio of histo=======================
+
+c2.cd(6)
+histo_ratio['hxfoc_ratio'] =  histo_data['tmp_hxfoc'].Clone('xfoc_ratio')
+histo_ratio['hxfoc_ratio'].Divide(histo_mc['hxfoc'])
+histo_ratio['hxfoc_ratio'].Draw("ep")
+histo_ratio['hxfoc_ratio'].SetTitle(";[data/MC]   xfoc ; ratio") 
+
 
 c3 = R.TCanvas()
 c3.Divide(2,3)
 
 
 c3.cd(1)
-histo_mc['hdp'].Draw()
-histo_data['tmp_hdp'].Draw('hist same')
+histo_mc['hyfoc'].Draw()
+histo_data['tmp_hyfoc'].Draw('hist same')
 
 legend3 = R.TLegend(0.6,0.6,0.7,0.8)
 legend3.AddEntry(histo_mc['hdp'], 'MC', 'l')
@@ -195,31 +238,25 @@ legend3.AddEntry(histo_data['tmp_hdp'],'Data', 'f')
 legend3.Draw()
 
 c3.cd(2)
-histo_ratio['hdp_ratio'] = histo_data['tmp_hdp'].Clone("hdp_ratio")
-histo_ratio['hdp_ratio'].Divide(histo_mc['hdp'])
-histo_ratio['hdp_ratio'].Draw("ep")
-histo_ratio['hdp_ratio'].SetTitle(";[data/MC]    #delta;ratio")
+histo_ratio['hyfoc_ratio'] =  histo_data['tmp_hyfoc'].Clone('yfoc_ratio')
+histo_ratio['hyfoc_ratio'].Divide(histo_mc['hyfoc'])
+histo_ratio['hyfoc_ratio'].Draw("ep")
+histo_ratio['hyfoc_ratio'].SetTitle(";[data/MC]   yfoc ; ratio") 
 
-
+'''
 c3.cd(3)
 histo_mc['hxprec'].Draw()
 histo_data['tmp_hxptar'].Draw("hist same")
 
 c3.cd(4)
-histo_ratio['hxptar_ratio'] =  histo_data['tmp_hxptar'].Clone('xptar_ratio')
-histo_ratio['hxptar_ratio'].Divide(histo_mc['hxprec'])
-histo_ratio['hxptar_ratio'].Draw("ep")
-histo_ratio['hxptar_ratio'].SetTitle(";[data/MC]   xptar ; ratio") 
+
 
 c3.cd(5)
 histo_mc['hyprec'].Draw()
 histo_data['tmp_hyptar'].Draw("hist same")
 
-c3.cd(6)
-histo_ratio['hyptar_ratio'] = histo_data['tmp_hyptar'].Clone('yptar_ratio')
-histo_ratio['hyptar_ratio'].Divide(histo_mc['hyprec'])
-histo_ratio['hyptar_ratio'].Draw("ep")
-histo_ratio['hyptar_ratio'].SetTitle("; [data/MC]   yptar; ratio")
+c3.cd(6)'''
+
 
 for histo in histo_ratio:
     histo_ratio[histo].SetMaximum(1.2)
@@ -230,12 +267,11 @@ for histo in histo_ratio:
 
     #histo_ratio[histo].GetXaxis().SetTitleFont(22)
     #histo_ratio[histo].GetYaxis().SetTitleFont(22)
-
+'''
 c1.Draw()
 c2.Draw()
 c3.Draw()
-
-
+'''
 
 #c1.SaveAs("carbon_%s_dataToMC.pdf"    %(str(mom_val).replace('.','p')))
 #c2.SaveAs("carbon_%s_fp_dataToMC.pdf" %(str(mom_val).replace('.','p')))
