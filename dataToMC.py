@@ -27,13 +27,13 @@ file = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.roo
 
 #=============  Defining histograms for MC Leaf ================================
 
-histo_mc['hdp']    = R.TH1F('hdp',   '; #delta;  Number of Entries', 32, -10.0, 22.0)
-histo_mc['hyrec']  = R.TH1F('hytar', '; ytar  ;  Number of Entries', 100, -3.0,  3.0)
-histo_mc['hyprec'] = R.TH1F('hyptar','; yprec ;  Number of Entries', 100, -0.1,  0.1)
-histo_mc['hxprec'] = R.TH1F('hxptar','; xprec ;  Number of Entries', 100, -0.1,  0.1)
-histo_mc['hw2']    = R.TH1F('hw2',   '; w2    ;  Number of Entries', 100,  0.5, 19.5)
-histo_mc['hxfoc']  = R.TH1F('hxfoc', '; xfoc  ;  Number of Entries', 100, -40.0,40.0)
-histo_mc['hyfoc']  = R.TH1F('hyfoc', '; yfoc  ;  Number of Entries', 100, -40.0,40.0)
+histo_mc['hdp']    = R.TH1F('hdp',   '; #delta [%];        #epsilonQ (Counts / mC)', 32, -10.0, 22.0)
+histo_mc['hyrec']  = R.TH1F('hytar', '; Y-tar [cm] ;       #epsilonQ (Counts / mC)', 100, -3.0,  3.0)
+histo_mc['hyprec'] = R.TH1F('hyptar','; Y\'tar [rad] ;     #epsilonQ (Counts / mC)', 100, -0.1,  0.1)
+histo_mc['hxprec'] = R.TH1F('hxptar','; X\'tar [rad] ;     #epsilonQ (Counts / mC)', 100, -0.1,  0.1)
+histo_mc['hw2']    = R.TH1F('hw2',   '; W^{2} [GeV^{2}] ;  #epsilonQ (Counts / mC)', 100,  0.5, 19.5)
+histo_mc['hxfoc']  = R.TH1F('hxfoc', '; xfoc  ;            #epsilonQ (Counts / mC)', 100, -40.0,40.0)
+histo_mc['hyfoc']  = R.TH1F('hyfoc', '; yfoc  ;            #epsilonQ (Counts / mC)', 100, -40.0,40.0)
 
 
 #Getting TTree of root file
@@ -88,11 +88,9 @@ print ("My DataFile: " , dataFile)
 
 dd = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/dataDict/test.pkl', 'rb'))
 
-
-
 for tar, tar_dict in dd.items():
     
-    if tar =='c12':
+    if tar == 'c12':
         
         for index, mom_list in enumerate(dd[tar]['pcent_list']):
             
@@ -141,12 +139,20 @@ legend.AddEntry(histo_mc['hdp'], 'MC', 'l')
 legend.AddEntry(histo_data['tmp_hdp'],'Data', 'f')
 legend.Draw()
 
+factor = histo_data['tmp_hdp'].Integral()/histo_mc['hdp'].Integral()
+factor = round(1-factor, 2) * 100
+
 c1.cd(2)
 histo_ratio['hdp_ratio'] = histo_data['tmp_hdp'].Clone("hdp_ratio")
 histo_ratio['hdp_ratio'].Divide(histo_mc['hdp'])
 histo_ratio['hdp_ratio'].Draw("ep")
 histo_ratio['hdp_ratio'].SetTitle(";[data/MC]    #delta;ratio")
 
+text = R.TText(0.1, 1.15, "Diff in % : {}".format(factor))
+text.SetTextColor(2);
+text.SetTextFont(22)
+text.SetTextSize(0.07)
+text.Draw()
 
 c1.cd(3)
 histo_mc['hyprec'].Draw()
@@ -157,12 +163,6 @@ histo_ratio['hyptar_ratio'] = histo_data['tmp_hyptar'].Clone('yptar_ratio')
 histo_ratio['hyptar_ratio'].Divide(histo_mc['hyprec'])
 histo_ratio['hyptar_ratio'].Draw("ep")
 histo_ratio['hyptar_ratio'].SetTitle("; [data/MC]   yptar; ratio")
-
-
-
-'''
-c1.cd(4)
-'''
 
 c1.cd(5)
 histo_mc['hw2'].Draw()
@@ -183,10 +183,6 @@ c2.Divide(2,3)
 c2.cd(1)
 histo_mc['hxprec'].Draw()
 histo_data['tmp_hxptar'].Draw('hist same')
-
-'''
-histo_mc['hyfoc'].Draw()
-histo_data['tmp_hyfoc'].Draw('hist same')'''
 
 legend1 = R.TLegend(0.7,0.6,0.79,0.8)
 legend1.AddEntry(histo_mc['hyfoc'], 'MC', 'l')
@@ -243,19 +239,6 @@ histo_ratio['hyfoc_ratio'].Divide(histo_mc['hyfoc'])
 histo_ratio['hyfoc_ratio'].Draw("ep")
 histo_ratio['hyfoc_ratio'].SetTitle(";[data/MC]   yfoc ; ratio") 
 
-'''
-c3.cd(3)
-histo_mc['hxprec'].Draw()
-histo_data['tmp_hxptar'].Draw("hist same")
-
-c3.cd(4)
-
-
-c3.cd(5)
-histo_mc['hyprec'].Draw()
-histo_data['tmp_hyptar'].Draw("hist same")
-
-c3.cd(6)'''
 
 
 for histo in histo_ratio:
