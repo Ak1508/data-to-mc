@@ -71,18 +71,20 @@ for entry in range(nentries):
     fail_id = getattr(t, 'fail_id')
 
     # define Cut
-    if fail_id ==0 and delta>-10 and delta < 22:
-
-        histo_mc['hdp'].Fill(delta,     born*mc_scaleFactor/rci)
-        histo_mc['hyrec'].Fill(yrec,    born*mc_scaleFactor/rci)
-        histo_mc['hyprec'].Fill(yprec,  born*mc_scaleFactor/rci)
-        histo_mc['hxprec'].Fill(xprec,  born*mc_scaleFactor/rci)
-        histo_mc['hw2'].Fill(w2,        born*mc_scaleFactor/rci)
-        histo_mc['hxfoc'].Fill(xfocal,  born*mc_scaleFactor/rci)
-        histo_mc['hyfoc'].Fill(yfocal,  born*mc_scaleFactor/rci)
+    if fail_id ==0:
+        if delta>-10 and delta < 22:
+            
+            histo_mc['hdp'].Fill(delta,     born*mc_scaleFactor/rci)
+            histo_mc['hyrec'].Fill(yrec,    born*mc_scaleFactor/rci)
+            histo_mc['hyprec'].Fill(yprec,  born*mc_scaleFactor/rci)
+            histo_mc['hw2'].Fill(w2,        born*mc_scaleFactor/rci)
+            histo_mc['hxfoc'].Fill(xfocal,  born*mc_scaleFactor/rci)
+            histo_mc['hyfoc'].Fill(yfocal,  born*mc_scaleFactor/rci)
+        if delta>-10 and delta < 5:
+            histo_mc['hxprec'].Fill(xprec,  born*mc_scaleFactor/rci)
     
 
-dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/scripts/check.root")
+dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/scripts/check_1.root")
 
 print ("My DataFile: " , dataFile)
 
@@ -105,6 +107,8 @@ for tar, tar_dict in dd.items():
                 histo_data['tmp_hw2']    = dataFile.FindObjectAny('hw2_qNorm_%s_%s'    % (tar, str(dd[tar]['pcent_list'][index]).replace('.', 'p')))
                 histo_data['tmp_hxfoc']  = dataFile.FindObjectAny('hxfoc_qNorm_%s_%s'  % (tar, str(dd[tar]['pcent_list'][index]).replace('.', 'p')))
                 histo_data['tmp_hyfoc']  = dataFile.FindObjectAny('hyfoc_qNorm_%s_%s'  % (tar, str(dd[tar]['pcent_list'][index]).replace('.', 'p')))
+
+                
 #Anlysis time
 print ('\nThe analysis took %.3f minutes\n' % ((time.time() - startTime) / (60.))) 
 
