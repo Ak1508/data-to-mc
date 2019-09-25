@@ -13,12 +13,12 @@ elif os.path.exists(os.path.expanduser('~/rootlogon.C')):
 startTime = time.time()
 
 #======================================================================================#
-  #  Reading Yield from DATA RootFiles generated from other script 
+#         Reading Yield from DATA RootFiles generated from other script 
 #=======================================================================================#
-dFactor_hydrogen  = 0.262
+dFactor_hydrogen  = 0.262 # correction factor from dummy 
 dFactor_deuterium = 0.244
 
-dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/scripts/yield.root")
+dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/scripts/new_shms_yield.root")
 
 dd = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/dataDict/test.pkl', 'rb'))
 
@@ -31,8 +31,8 @@ hdata = {'dp'    : [],
          'w2'    : [],
         }
 
-histo_data    = {} # dictionary of basre yield
-histo_data_dc = {} # dictionary of yield after dummy substraction
+histo_data    = {} # dictionary to store bare yield
+histo_data_dc = {} # dictionary to store yield after dummy substraction
 
 # Reading histo from rootfile and storing in dictionary
 for tar, tar_dict in dd.items():
@@ -103,7 +103,7 @@ InFileName = input("What is the Target Name? ")
 mom_val    = float(input("Which Momentum Setting? "))
 
 
-tar_name_dd ={'carbon': 'c12',
+tar_name_dd ={'carbon': 'C12',
               'ld2'   : 'h2',
               'lh2'   : 'h1'}
 
@@ -117,15 +117,16 @@ histo_mc    = {}
 histo_ratio = {} 
 
 #============================ Defining histograms for MC Leaf =======================================
-histo_mc['hdp']    = R.TH1F('hdp',   '; #delta [%];        #epsilonQ (Counts / mC)', histo_data_dc[tar]['dp'][0].GetSize()-2, histo_data_dc[tar]['dp'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['dp'][0].GetXaxis().GetXmax())
-histo_mc['hyrec']  = R.TH1F('hytar', '; Y-tar [cm] ;       #epsilonQ (Counts / mC)', histo_data_dc[tar]['ytar'][0].GetSize()-2, histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmax())
-histo_mc['hyprec'] = R.TH1F('hyptar','; Y\'tar [rad];      #epsilonQ (Counts / mC)', histo_data_dc[tar]['yptar'][0].GetSize()-2, histo_data_dc[tar]['yptar'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['yptar'][0].GetXaxis().GetXmax())
-histo_mc['hxprec'] = R.TH1F('hxptar','; X\'tar [rad];      #epsilonQ (Counts / mC)', histo_data_dc[tar]['xptar'][0].GetSize()-2, histo_data_dc[tar]['xptar'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['xptar'][0].GetXaxis().GetXmax())
-histo_mc['hw2']    = R.TH1F('hw2',   '; W^{2} [GeV^{2}];   #epsilonQ (Counts / mC)', histo_data_dc[tar]['w2'][0].GetSize()-2, histo_data_dc[tar]['w2'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['w2'][0].GetXaxis().GetXmax())
-histo_mc['hxfoc']  = R.TH1F('hxfoc', '; xfoc  ;            #epsilonQ (Counts / mC)', histo_data_dc[tar]['xfoc'][0].GetSize()-2, histo_data_dc[tar]['xfoc'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['xfoc'][0].GetXaxis().GetXmax())
-histo_mc['hyfoc']  = R.TH1F('hyfoc', '; yfoc  ;            #epsilonQ (Counts / mC)', histo_data_dc[tar]['yfoc'][0].GetSize()-2, histo_data_dc[tar]['yfoc'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['yfoc'][0].GetXaxis().GetXmax())
-if tar == 'h2':
-    histo_mc['hyrec']  = R.TH1F('hytar', '; Y-tar [cm] ;       #epsilonQ (Counts / mC)', histo_data_dc[tar]['ytar'][0].GetSize()-2, histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmax())
+histo_mc['hdp']    = R.TH1F('hdp',   '; #delta [%];        #epsilonQ (Counts / mC)', histo_data_dc[tar]['dp'][0].GetSize()-2,    histo_data_dc[tar]['dp'][0].GetXaxis().GetXmin(),   histo_data_dc[tar]['dp'][0].GetXaxis().GetXmax())
+histo_mc['hyrec']  = R.TH1F('hytar', '; Y-tar [cm] ;       #epsilonQ (Counts / mC)', histo_data_dc[tar]['ytar'][0].GetSize()-2,  histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmax())
+histo_mc['hyprec'] = R.TH1F('hyptar','; Y\'tar [rad];      #epsilonQ (Counts / mC)', histo_data_dc[tar]['yptar'][0].GetSize()-2, histo_data_dc[tar]['yptar'][0].GetXaxis().GetXmin(),histo_data_dc[tar]['yptar'][0].GetXaxis().GetXmax())
+histo_mc['hxprec'] = R.TH1F('hxptar','; X\'tar [rad];      #epsilonQ (Counts / mC)', histo_data_dc[tar]['xptar'][0].GetSize()-2, histo_data_dc[tar]['xptar'][0].GetXaxis().GetXmin(),histo_data_dc[tar]['xptar'][0].GetXaxis().GetXmax())
+histo_mc['hw2']    = R.TH1F('hw2',   '; W^{2} [GeV^{2}];   #epsilonQ (Counts / mC)', histo_data_dc[tar]['w2'][0].GetSize()-2,    histo_data_dc[tar]['w2'][0].GetXaxis().GetXmin(),   histo_data_dc[tar]['w2'][0].GetXaxis().GetXmax())
+histo_mc['hxfoc']  = R.TH1F('hxfoc', '; xfoc  ;            #epsilonQ (Counts / mC)', histo_data_dc[tar]['xfoc'][0].GetSize()-2,  histo_data_dc[tar]['xfoc'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['xfoc'][0].GetXaxis().GetXmax())
+histo_mc['hyfoc']  = R.TH1F('hyfoc', '; yfoc  ;            #epsilonQ (Counts / mC)', histo_data_dc[tar]['yfoc'][0].GetSize()-2,  histo_data_dc[tar]['yfoc'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['yfoc'][0].GetXaxis().GetXmax())
+
+#if tar == 'h2':
+#histo_mc['hyrec']  = R.TH1F('hytar', '; Y-tar [cm] ;       #epsilonQ (Counts / mC)', histo_data_dc[tar]['ytar'][0].GetSize()-2, histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmin(), histo_data_dc[tar]['ytar'][0].GetXaxis().GetXmax())
     
    
 #Getting TTree of root file
@@ -186,20 +187,28 @@ for tar, tar_dict in histo_data_dc.items():
     for key, value in hdata.items():
 
         for index, mom_list in enumerate(dd[tar]['pcent_list']):
-            histo_data_dc[tar][key][index].SetLineColor(3)
-            histo_data_dc[tar][key][index].SetFillStyle(3003)
-            histo_data_dc[tar][key][index].SetFillColor(3)
-            #histo_data_dc[tar][key][index].GetXaxis().SetTitleSize(0.05)
-            #histo_data_dc[tar][key][index].GetYaxis().SetTitleSize(0.05)
-            histo_data_dc[tar][key][index].SetLineWidth(2)
+
+            histo_data_dc[tar][key][index].SetLineColor(4)
+            histo_data_dc[tar][key][index].GetXaxis().SetTitleSize(0.06)
+            histo_data_dc[tar][key][index].GetYaxis().SetTitleSize(0.06)
+            histo_data_dc[tar][key][index].GetXaxis().SetLabelSize(0.06)
+            histo_data_dc[tar][key][index].GetYaxis().SetLabelSize(0.06)
+            histo_data_dc[tar][key][index].SetLineWidth(1)
 
             histo_data[tar][key][index].SetLineColor(2)
-            histo_data[tar][key][index].SetLineWidth(2)
+            histo_data[tar][key][index].SetLineWidth(1)
 
 for histo in histo_mc:
-    histo_mc[histo].SetLineColor(4)
+    histo_mc[histo].SetFillStyle(3003)
+    histo_mc[histo].SetFillColor(3)
+    histo_mc[histo].SetLineColor(3)
     histo_mc[histo].SetLineWidth(1)
-    #histo_mc[histo].SetMarkerStyle(21)
+
+    histo_mc[histo].GetXaxis().SetTitleSize(0.06)
+    histo_mc[histo].GetYaxis().SetTitleSize(0.06)
+
+    histo_mc[histo].GetYaxis().SetLabelSize(0.06)
+    histo_mc[histo].GetXaxis().SetLabelSize(0.06)
 
 mom_list = [2.7, 3.3, 4.0, 5.1]
 
@@ -224,17 +233,17 @@ if tar == 'h2' or tar == 'h1':
     print (tar)
     
     c1.cd(1)
-    histo_mc['hdp'].Draw()
-    histo_data[tar]['dp'][index].Draw("same")
-    histo_data['al27']['dp'][index].Draw("same")
+    histo_mc['hdp'].Draw("hist")
+    histo_data[tar]['dp'][index].Draw("ep1 same")
+    histo_data['al27']['dp'][index].Draw("ep1 same")
     histo_data['al27']['dp'][index].SetLineColor(5)
-    histo_data_dc[tar]['dp'][index].Draw("HIST same")
+    histo_data_dc[tar]['dp'][index].Draw("ep1 same")
     histo_mc['hdp'].SetTitle("%s   %.1f GeV^{2}" %(tar, mom_val))
     
     legend = R.TLegend(0.6,0.6,0.75,0.8)
-    legend.AddEntry(histo_mc['hdp'], 'MC', 'l')
+    legend.AddEntry(histo_mc['hdp'], 'MC', 'f')
     legend.AddEntry(histo_data[tar]['dp'][index],'Data + End Cap', 'l')
-    legend.AddEntry(histo_data_dc[tar]['dp'][index],'Data', 'f')
+    legend.AddEntry(histo_data_dc[tar]['dp'][index],'Data', 'l')
     legend.AddEntry(histo_data['al27']['dp'][index],'End Cap', 'l')
     legend.Draw()
 
@@ -257,54 +266,54 @@ if tar == 'h2' or tar == 'h1':
 
 
     c1.cd(3)
-    histo_mc['hyrec'].Draw()
-    histo_data[tar]['ytar'][index].Draw("same")
-    histo_data['al27']['ytar'][index].Draw("same")
+    histo_mc['hyrec'].Draw('hist')
+    histo_data[tar]['ytar'][index].Draw("ep1 same")
+    histo_data['al27']['ytar'][index].Draw("ep1 same")
     histo_data['al27']['ytar'][index].SetLineColor(5)
-    histo_data_dc[tar]['ytar'][index].Draw("HIST same")
+    histo_data_dc[tar]['ytar'][index].Draw("ep1 same")
 
     c1.cd(4)
     histo_ratio['hytar_ratio'] = histo_data_dc[tar]['ytar'][index].Clone("hytar_ratio")
     histo_ratio['hytar_ratio'].Divide(histo_mc['hyrec'])
     histo_ratio['hytar_ratio'].Draw("ep")
-    histo_ratio['hytar_ratio'].SetTitle(";[data/MC]    #delta;ratio")
+    histo_ratio['hytar_ratio'].SetTitle(";[data/MC]    Y-tar;ratio")
 
     
     c1.cd(5)
-    histo_mc['hyprec'].Draw()
-    histo_data[tar]['yptar'][index].Draw("same")
-    histo_data['al27']['yptar'][index].Draw("same")
+    histo_mc['hyprec'].Draw("hist")
+    histo_data[tar]['yptar'][index].Draw("ep1 same")
+    histo_data['al27']['yptar'][index].Draw("ep1 same")
     histo_data['al27']['yptar'][index].SetLineColor(5)
-    histo_data_dc[tar]['yptar'][index].Draw("HIST same")
+    histo_data_dc[tar]['yptar'][index].Draw("ep1 same")
     
     c1.cd(6)
     histo_ratio['hyptar_ratio'] = histo_data_dc[tar]['ytar'][index].Clone("hyptar_ratio")
     histo_ratio['hyptar_ratio'].Divide(histo_mc['hyprec'])
     histo_ratio['hyptar_ratio'].Draw("ep")
-    histo_ratio['hyptar_ratio'].SetTitle(";[data/MC]    #delta;ratio")
+    histo_ratio['hyptar_ratio'].SetTitle(";[data/MC]    Y\'-tar;ratio")
 
     
     ##++++++++++++ Second Canvas+++++++++++++++++++++ 
     c2.cd(1)
-    histo_mc['hxprec'].Draw()
-    histo_data[tar]['xptar'][index].Draw("same")
-    histo_data['al27']['xptar'][index].Draw("same")
+    histo_mc['hxprec'].Draw("hist")
+    histo_data[tar]['xptar'][index].Draw("ep1 same")
+    histo_data['al27']['xptar'][index].Draw("ep1 same")
     histo_data['al27']['xptar'][index].SetLineColor(5)
-    histo_data_dc[tar]['xptar'][index].Draw("HIST same")
+    histo_data_dc[tar]['xptar'][index].Draw("ep1 same")
     
 
     c2.cd(2)
     histo_ratio['hxptar_ratio'] = histo_data_dc[tar]['xptar'][index].Clone("hxptar_ratio")
     histo_ratio['hxptar_ratio'].Divide(histo_mc['hxprec'])
     histo_ratio['hxptar_ratio'].Draw("ep")
-    histo_ratio['hxptar_ratio'].SetTitle(";[data/MC]    #delta;ratio")
+    histo_ratio['hxptar_ratio'].SetTitle(";[data/MC]    X\'-tar;ratio")
        
     c2.cd(3)
-    histo_mc['hxfoc'].Draw()
-    histo_data[tar]['xfoc'][index].Draw("same")
-    histo_data['al27']['xfoc'][index].Draw("same")
+    histo_mc['hxfoc'].Draw("hist")
+    histo_data[tar]['xfoc'][index].Draw("ep1 same")
+    histo_data['al27']['xfoc'][index].Draw("ep1 same")
     histo_data['al27']['xfoc'][index].SetLineColor(5)
-    histo_data_dc[tar]['xfoc'][index].Draw("HIST same")
+    histo_data_dc[tar]['xfoc'][index].Draw("ep1 same")
 
     c2.cd(4)
     histo_ratio['hxfoc_ratio'] = histo_data_dc[tar]['xfoc'][index].Clone("hxfoc_ratio")
@@ -314,11 +323,11 @@ if tar == 'h2' or tar == 'h1':
     
     
     c2.cd(5)
-    histo_mc['hyfoc'].Draw()
-    histo_data[tar]['yfoc'][index].Draw("same")
-    histo_data['al27']['yfoc'][index].Draw("same")
+    histo_mc['hyfoc'].Draw("hist")
+    histo_data[tar]['yfoc'][index].Draw("ep1 same")
+    histo_data['al27']['yfoc'][index].Draw("ep1 same")
     histo_data['al27']['yfoc'][index].SetLineColor(5)
-    histo_data_dc[tar]['yfoc'][index].Draw("HIST same")
+    histo_data_dc[tar]['yfoc'][index].Draw("ep1 same")
     
     c2.cd(6)
     histo_ratio['hyfoc_ratio'] = histo_data_dc[tar]['yfoc'][index].Clone("hyfoc_ratio")
@@ -327,11 +336,11 @@ if tar == 'h2' or tar == 'h1':
     histo_ratio['hyfoc_ratio'].SetTitle(";[data/MC]   yfoc;ratio")
        
     c3.cd(1)
-    histo_mc['hw2'].Draw()
-    histo_data[tar]['w2'][index].Draw("same")
-    histo_data['al27']['w2'][index].Draw("same")
+    histo_mc['hw2'].Draw("hist")
+    histo_data[tar]['w2'][index].Draw("ep1 same")
+    histo_data['al27']['w2'][index].Draw("ep1 same")
     histo_data['al27']['w2'][index].SetLineColor(5)
-    histo_data_dc[tar]['w2'][index].Draw("HIST same")
+    histo_data_dc[tar]['w2'][index].Draw("ep1 same")
 
     c3.cd(2)
     histo_ratio['hw2_ratio'] = histo_data_dc[tar]['w2'][index].Clone("hw2_ratio")
@@ -344,13 +353,13 @@ else:
     print (tar)
 
     c1.cd(1)
-    histo_mc['hdp'].Draw()
-    histo_data_dc[tar]['dp'][index].Draw("HIST same")
+    histo_mc['hdp'].Draw("hist")
+    histo_data_dc[tar]['dp'][index].Draw("ep1 same")
     histo_mc['hdp'].SetTitle("%s   %.1f GeV^{2}" %(tar, mom_val))
 
     legend = R.TLegend(0.6,0.6,0.7,0.8)
-    legend.AddEntry(histo_mc['hdp'], 'MC', 'l')
-    legend.AddEntry(histo_data_dc[tar]['dp'][index],'Data', 'f')
+    legend.AddEntry(histo_mc['hdp'], 'MC', 'f')
+    legend.AddEntry(histo_data_dc[tar]['dp'][index],'Data', 'l')
     legend.Draw()
 
     factor = histo_data_dc[tar]['dp'][index].Integral()/histo_mc['hdp'].Integral()
@@ -370,8 +379,8 @@ else:
     text.Draw()
 
     c1.cd(3)
-    histo_mc['hyrec'].Draw()
-    histo_data_dc[tar]['ytar'][index].Draw("HIST same")
+    histo_mc['hyrec'].Draw("hist")
+    histo_data_dc[tar]['ytar'][index].Draw("ep1 same")
 
     c1.cd(4)
     histo_ratio['hytar_ratio'] = histo_data_dc[tar]['ytar'][index].Clone("hytar_ratio")
@@ -380,8 +389,8 @@ else:
     histo_ratio['hytar_ratio'].SetTitle(";[data/MC]    Ytar;ratio")
     
     c1.cd(5)
-    histo_mc['hyprec'].Draw()
-    histo_data_dc[tar]['yptar'][index].Draw("HIST same")
+    histo_mc['hyprec'].Draw("hist")
+    histo_data_dc[tar]['yptar'][index].Draw("ep1 same")
 
     c1.cd(6)
     histo_ratio['hyptar_ratio'] = histo_data_dc[tar]['yptar'][index].Clone("hyptar_ratio")
@@ -391,8 +400,8 @@ else:
 
     ##=============== Second Canvas ========================
     c2.cd(1)
-    histo_mc['hxprec'].Draw()
-    histo_data_dc[tar]['xptar'][index].Draw("HIST same")
+    histo_mc['hxprec'].Draw("hist")
+    histo_data_dc[tar]['xptar'][index].Draw("ep1 same")
 
     c2.cd(2)
     histo_ratio['hxptar_ratio'] = histo_data_dc[tar]['xptar'][index].Clone("hxptar_ratio")
@@ -401,8 +410,8 @@ else:
     histo_ratio['hxptar_ratio'].SetTitle(";[data/MC]    X\'tar;ratio")
     
     c2.cd(3)
-    histo_mc['hxfoc'].Draw()
-    histo_data_dc[tar]['xfoc'][index].Draw("HIST same")
+    histo_mc['hxfoc'].Draw("hist")
+    histo_data_dc[tar]['xfoc'][index].Draw("ep1 same")
     
     c2.cd(4)
     histo_ratio['hxfoc_ratio'] = histo_data_dc[tar]['xfoc'][index].Clone("hxfoc_ratio")
@@ -411,8 +420,8 @@ else:
     histo_ratio['hxfoc_ratio'].SetTitle(";[data/MC]   xfoc;ratio")
     
     c2.cd(5)
-    histo_mc['hyfoc'].Draw()
-    histo_data_dc[tar]['yfoc'][index].Draw("HIST same")
+    histo_mc['hyfoc'].Draw("hist")
+    histo_data_dc[tar]['yfoc'][index].Draw("ep1 same")
 
     c2.cd(6)
     histo_ratio['hyfoc_ratio'] = histo_data_dc[tar]['yfoc'][index].Clone("hyfoc_ratio")
@@ -423,8 +432,8 @@ else:
     
     ##+++++++++++++++++++++++++ Third Canvas+++++++++++++++++++++++++++++++++=
     c3.cd(1)
-    histo_mc['hw2'].Draw()
-    histo_data_dc[tar]['w2'][index].Draw("HIST same")
+    histo_mc['hw2'].Draw("hist")
+    histo_data_dc[tar]['w2'][index].Draw("ep1 same")
 
     c3.cd(2)
     histo_ratio['hw2_ratio'] = histo_data_dc[tar]['w2'][index].Clone("hw2_ratio")
