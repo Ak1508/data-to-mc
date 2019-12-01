@@ -2,5 +2,8 @@
 *.ps
 *.root
 *.pdf
+*.txt
 ratio/
 comparison/
+pass-1-comp/
+test_trail/

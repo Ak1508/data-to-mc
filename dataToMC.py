@@ -18,16 +18,19 @@ histo_data  = {}
 histo_ratio = {}
 
 
-
-# ====================== Opening MC file =======================================
+#==========================================================================================================#
+#                             Opening Monte-Carlo Single Arm file     
+#==========================================================================================================#
 
 InFileName = input("What is the Target Name? ")
 
 mom_val    = float(input("Which Momentum Setting? "))
 
-file = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.root" %(InFileName, str(mom_val).replace('.','p')))
+file       = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.root" %(InFileName, str(mom_val).replace('.','p')))
 
-#=============  Defining histograms for MC Leaf ================================
+#---------------------------------
+# Defining histograms for MC Leaf
+#---------------------------------
 
 histo_mc['hdp']    = R.TH1F('hdp',   '; #delta [%];        #epsilonQ (Counts / mC)', 32, -10.0, 22.0)
 histo_mc['hyrec']  = R.TH1F('hytar', '; Y-tar [cm] ;       #epsilonQ (Counts / mC)', 100, -3.0,  3.0)
@@ -39,14 +42,20 @@ histo_mc['hyfoc']  = R.TH1F('hyfoc', '; yfoc  ;            #epsilonQ (Counts / m
 histo_mc['hxpfoc'] = R.TH1F('hxpfoc','; xp_fp ;            #epsilonQ (Counts / mC)', 100, -0.1,  0.1)
 histo_mc['hypfoc'] = R.TH1F('hypfoc','; yp_fp ;            #epsilonQ (Counts / mC)', 100, -0.1,  0.1)
 
-#Getting TTree of root file
-t = file.Get("tree")
+#---------------------------
+# Getting TTree of root file
+#---------------------------
+
+t        = file.Get("tree")
 nentries = t.GetEntries()
 
-
-# ================= Scale Factor obtainig from recon MC ========================
+#------------------------------------
+# Scale Factor obtainig from MC
+#------------------------------------ 
 mc_scaleFactor = np.loadtxt('/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.txt' %(InFileName, str(mom_val).replace('.','p')),unpack=True)
+
 print (mc_scaleFactor)
+
 #print (type(mc_scaleFactor))
 
 print ("My Monte Carlo file: ", file)
@@ -79,9 +88,8 @@ for entry in range(nentries):
     # define Cut
     if fail_id ==0:
 
-        if delta < 10. or  delta > 22.: continue
+        if delta < -10. or  delta > 22. : continue
         
-        #histo_mc['hdp'].Fill(delta,     born*mc_scaleFactor/rci)
         histo_mc['hyrec'].Fill(yrec,     born*mc_scaleFactor/rci)
         histo_mc['hyprec'].Fill(yprec,   born*mc_scaleFactor/rci)
         histo_mc['hw2'].Fill(w2,         born*mc_scaleFactor/rci)
@@ -93,7 +101,9 @@ for entry in range(nentries):
         histo_mc['hdp'].Fill(delta,      born*mc_scaleFactor/rci)
 
 print ( "focal plane :" ,histo_mc['hxpfoc'].Integral())
-
+#---------------------------------------------------------------------
+# Now we would like to open the Data Yield RootFile  
+# --------------------------------------------------------------------
 fname = "/w/hallc-scifs17exp/xem2/abishek/xem/scripts/diff_delta_region/delta_10_22_carbon.root"
 
 dataFile = R.TFile(fname)
@@ -102,7 +112,8 @@ print ("My DataFile: " , dataFile)
 
 print (fname)
 print (fname.split('/'))
-name = fname.split('/')
+
+name   = fname.split('/')
 f_name = name[8].split('.')
 print (f_name[0])
 
@@ -155,8 +166,9 @@ for histo in histo_data:
     histo_data[histo].GetYaxis().SetLabelSize(0.06)
     histo_data[histo].GetXaxis().SetLabelSize(0.06)
 
-#=======================Plot=====================================
-
+#----------------------------------------------------------------
+# PLOTs For Comparing Data to Monte-Carlo
+#----------------------------------------------------------------
 c1    = R.TCanvas() 
 c1.Divide(2,3)
 
@@ -300,9 +312,9 @@ histo_ratio['hypfoc_ratio'].Divide(histo_mc['hypfoc'])
 histo_ratio['hypfoc_ratio'].Draw("ep")
 histo_ratio['hypfoc_ratio'].SetTitle(";[data/MC]   yp_fp ; ratio") 
 
-
-
-
+#----------------------------------------------------------------
+# Some Histograms Attributes for ratio since it was defined later
+#----------------------------------------------------------------
 
 for histo in histo_ratio:
     histo_ratio[histo].SetMaximum(1.2)
