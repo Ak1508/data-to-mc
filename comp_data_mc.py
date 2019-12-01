@@ -19,8 +19,9 @@ dFactor_hydrogen  = 0.262 # correction factor from dummy
 dFactor_deuterium = 0.244
 
 dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/scripts/new_shms_yield.root")
+#dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/pass-2/shms_yield.root")
 
-dd = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/dataDict/test.pkl', 'rb'))
+dd = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/pass-2/dataDict.pkl', 'rb'))
 
 hdata = {'dp'    : [],
          'ytar'  : [],
@@ -103,7 +104,7 @@ InFileName = input("What is the Target Name? ")
 mom_val    = float(input("Which Momentum Setting? "))
 
 
-tar_name_dd ={'carbon': 'C12',
+tar_name_dd ={'carbon': 'c12',
               'ld2'   : 'h2',
               'lh2'   : 'h1'}
 
@@ -450,8 +451,11 @@ for histo in histo_ratio:
     histo_ratio[histo].SetMaximum(1.2)
     histo_ratio[histo].SetMinimum(0.8)
 
-    histo_ratio[histo].GetXaxis().SetTitleSize(0.05)
-    histo_ratio[histo].GetYaxis().SetTitleSize(0.05)
+    histo_ratio[histo].GetXaxis().SetTitleSize(0.06)
+    histo_ratio[histo].GetYaxis().SetTitleSize(0.06)
+
+    histo_ratio[histo].GetXaxis().SetLabelSize(0.06)
+    histo_ratio[histo].GetYaxis().SetLabelSize(0.06)
 
     #histo_ratio[histo].GetXaxis().SetTitleFont(22)
     #histo_ratio[histo].GetYaxis().SetTitleFont(22)
@@ -460,7 +464,7 @@ c1.Print("c1.ps(", "pdf")
 c2.Print("c1.ps(", 'pdf')
 c3.Print("c1.ps)", 'pdf')
 
-subprocess.call(["ps2pdf", "c1.ps", "%s_%s.pdf" %(InFileName, str(mom_val).replace('.','p'))])
+subprocess.call(["ps2pdf", "c1.ps", "%s_%s_new.pdf" %(InFileName, str(mom_val).replace('.','p'))])
 
 histo_data.clear()
 histo_data_dc.clear()
