@@ -133,7 +133,9 @@ tar = tar_name_dd[InFileName]
 
 print (tar)
 
-file = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.root" %(InFileName, str(mom_val).replace('.','p')))
+fileN = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.root" %(InFileName, str(mom_val).replace('.','p')))
+
+print (fileN)
 
 histo_mc    = {}
 histo_ratio = {} 
@@ -142,7 +144,7 @@ mom_list = [2.7, 3.3, 4.0, 5.1]
 
 index    = mom_list.index(mom_val)
 
-
+print (index)
 # :=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=  
 #              Defining histograms for MC Leaf
 # :=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=  
@@ -159,7 +161,7 @@ histo_mc['hyfoc']  = R.TH1F('hyfoc', '; yfoc  ;          #epsilonQ (Counts / mC)
 #       Getting TTree of root file
 # :=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=  
 
-t        = file.Get("tree")
+t        = fileN.Get("tree")
 nentries = t.GetEntries()
 # :=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=  
 #       Scale Factor obtainig from recon MC 
@@ -167,11 +169,11 @@ nentries = t.GetEntries()
 mc_scaleFactor = np.loadtxt('/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.txt' %(InFileName, str(mom_val).replace('.','p')),unpack=True)
 print (mc_scaleFactor)
 
-print ("My Monte Carlo file: ", file)
+print ("My Monte Carlo file: ", fileN)
 
 print (tar)
 
-for entry in range(10000):
+for entry in range(nentries):
     
     t.GetEntry(entry)
    
@@ -192,7 +194,7 @@ for entry in range(10000):
 
     # define Cut
     if fail_id ==0:
-        if delta>-10 and delta < 22:
+        if delta >-10 and delta <22 and yrec >-10 and yrec <10:
             
             histo_mc['hdp'].Fill(delta,     born*mc_scaleFactor/rci)
             histo_mc['hyrec'].Fill(yrec,    born*mc_scaleFactor/rci)
@@ -241,8 +243,8 @@ for histo in histo_mc:
     
     #histo_mc[histo].GetYaxis().SetTitleOffset(0.8)
 
-    # histo_mc[histo].SetLabelFont(22, "XY")
-    # histo_mc[histo].SetTitleFont(42, "XYZ")
+    histo_mc[histo].SetLabelFont(22, "XY")
+    histo_mc[histo].SetTitleFont(22, "XYZ")
 
     #histo_mc[histo].GetYaxis().SetNdivisions (510)
 
@@ -259,6 +261,10 @@ c2    = R.TCanvas()
 c2.Divide(2,2)
 
 tar = tar_name_dd[InFileName]
+
+mom_list = [2.7, 3.3, 4.0, 5.1]
+
+index    = mom_list.index(mom_val)
 
 print (tar)
 
@@ -292,7 +298,21 @@ linew2    = R.TLine (histo_data_dc[tar]['w2']   [index].GetXaxis().GetXmin() ,1 
 linexfoc  = R.TLine (histo_data_dc[tar]['xfoc'] [index].GetXaxis().GetXmin() ,1 , histo_data_dc[tar]['xfoc'] [index].GetXaxis().GetXmax()  ,1)
 lineyfoc  = R.TLine (histo_data_dc[tar]['yfoc'] [index].GetXaxis().GetXmin() ,1 , histo_data_dc[tar]['yfoc'] [index].GetXaxis().GetXmax()  ,1)
 
+linePeak  = R.TLine (histo_data_dc[tar]['ytar'] [index].GetXaxis().GetBinCenter(histo_data_dc[tar]['ytar'] [index].GetMaximumBin()),0,histo_data_dc[tar]['ytar'] [index].GetXaxis().GetBinCenter(histo_data_dc[tar]['ytar'] [index].GetMaximumBin()), histo_mc['hyrec'].GetBinContent(histo_mc['hyrec'].GetMaximumBin()))
 
+# print ("*****************************")
+# print (histo_data_dc[tar]['ytar'] [index].GetMaximumBin())
+# print (histo_data_dc[tar]['ytar'] [index].GetXaxis().GetBinCenter(histo_data_dc[tar]['ytar'] [index].GetMaximumBin()))
+
+# #print (histo_data_dc[tar]['ytar'][index].GetXaxis().FindBin(histo_data_dc[tar]['ytar'] [index].GetMaximumBin()))
+# #print (histo_data_dc[tar]['ytar'] [index].GetXaxis().GetBinCenter(histo_data_dc[tar]['ytar'][index].GetXaxis().FindBin(histo_data_dc[tar]['ytar'] [index].GetMaximumBin())))
+
+
+# print ("*****************************")
+
+
+
+print (index)
 
 if tar == 'h2' or tar == 'h1': 
     
@@ -342,6 +362,7 @@ if tar == 'h2' or tar == 'h1':
     linedp.Draw ("same")
 
     c1.cd(2)
+    pad2.SetGridx(1)
     pad2.Draw()
     pad2.SetBottomMargin (0)
     pad2.cd()
@@ -381,7 +402,7 @@ if tar == 'h2' or tar == 'h1':
     pad33.SetBottomMargin (0.35)
     pad33.Draw()
     pad33.cd()
-    histo_ratio['hyptar_ratio'] = histo_data_dc[tar]['ytar'][index].Clone("hyptar_ratio")
+    histo_ratio['hyptar_ratio'] = histo_data_dc[tar]['yptar'][index].Clone("hyptar_ratio")
     histo_ratio['hyptar_ratio'].Divide(histo_mc['hyprec'])
     histo_ratio['hyptar_ratio'].Draw("ep")
     histo_ratio['hyptar_ratio'].SetTitle("; Y\'_{tar};")
@@ -533,13 +554,19 @@ else:
     linedp.SetLineWidth (1)
     linedp.SetLineStyle (2)
     linedp.Draw ("same")
+
+
     #-------------------------------------------------------------------------------
     c1.cd(2)
+    pad2.SetGridx(1)
     pad2.Draw()
     pad2.SetBottomMargin (0)
     pad2.cd()
     histo_mc['hyrec'].Draw("hist")
     histo_data_dc[tar]['ytar'][index].Draw("ep1 same")
+
+    linePeak.SetLineColor(R.kRed)
+    linePeak.Draw("same")
 
     c1.cd(2)
     pad22.SetTopMargin (0)
@@ -555,6 +582,8 @@ else:
     lineytar.SetLineWidth (1)
     lineytar.SetLineStyle (2)
     lineytar.Draw ("same")
+
+    
     #-----------------------------------------------------------------------------------
     c1.cd(3)
     pad3.Draw()
@@ -671,7 +700,7 @@ for histo in histo_ratio:
     histo_ratio[histo].SetMaximum(1.2)
     histo_ratio[histo].SetMinimum(0.8)
     
-    histo_ratio[histo].SetLineColor(R.kRed)
+    histo_ratio[histo].SetLineColor(R.kMagenta)
 
     histo_ratio[histo].GetXaxis().SetTitleSize(0.16)
     histo_ratio[histo].GetYaxis().SetTitleSize(0.11)
@@ -680,8 +709,8 @@ for histo in histo_ratio:
     histo_ratio[histo].GetYaxis().CenterTitle()
 
     
-    histo_ratio[histo].GetXaxis().SetLabelSize(0.12)
-    histo_ratio[histo].GetYaxis().SetLabelSize(0.12)
+    histo_ratio[histo].GetXaxis().SetLabelSize(0.115)
+    histo_ratio[histo].GetYaxis().SetLabelSize(0.115)
 
     histo_ratio[histo].GetYaxis().SetNdivisions (207)
 
@@ -695,7 +724,7 @@ for histo in histo_ratio:
     histo_ratio[histo].SetLabelOffset(0.03, "X")
 #c1.Draw()
 #c2.Draw()
-    
+#raw = input ()    
 c1.Print("c1.ps(", "pdf")
 c2.Print("c1.ps)", 'pdf')
 
