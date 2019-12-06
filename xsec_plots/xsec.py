@@ -2,7 +2,7 @@
 
 import ROOT as R
 import numpy as np
-import pickle, string , os, time
+import pickle, string , os, time, sys
 import subprocess
 from pprint import pprint
 from array import array
@@ -13,17 +13,21 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 plt.rc('axes', linewidth=1.25)
 
+if len (sys.argv) != 2:
+    print (" USAGE : <output file >")
+    sys.exit(1)
+
 startTime = time.time()
 
 #======================================================================================#
 #         Reading Yield from DATA RootFiles generated from other script 
-#=======================================================================================#
+#======================================================================================#
 dFactor_hydrogen  = 0.262 # correction factor from dummy 
 dFactor_deuterium = 0.244
 
-dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/scripts/new_shms_yield.root")
+dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/%s/shms_yield_ytar_p_m10.root" %sys.argv[1])
 
-dd = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/dataDict/test.pkl', 'rb'))
+dd       = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/%s/dataDict.pkl' %sys.argv[1], 'rb'))
 
 hdata = {'dp'    : [],
          'ytar'  : [],
@@ -109,14 +113,14 @@ for tar, tar_dict in histo_data_dc.items():
                 histo_data_dc[tar][key].append(histo)
 
 #----------------------------------------------------------------------#
-#                        Creating Root File for MC                     #
+#             Creating Root File for MC                                #
 #----------------------------------------------------------------------#
 
-rof         = R.TFile('mc.root', 'update')
+rof         = R.TFile('mc.root', 'recreate')
 
 InFileName  = input("What is the Target Name? ")
 
-tar_name_dd ={'carbon': 'c12',
+tar_name_dd = {'carbon': 'c12',
               'ld2'   : 'h2',
               }
 
@@ -134,9 +138,9 @@ for str_tar, tar in tar_name_dd.items():
         histo_mc[tar]['dp'] = []
 
         for index, mom_list in enumerate(dd[tar]['pcent_list']):
-           
-            fp = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.root" %(str_tar, str(dd[tar]['pcent_list'][index]).replace('.','p')), "READ")
             
+            fp = R.TFile("/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.root" %(str_tar, str(dd[tar]['pcent_list'][index]).replace('.','p')), "READ")
+            rof.mkdir('%s_%s' % (tar, str(dd[tar]['pcent_list'][index]).replace('.', 'p')))
             rof.cd('%s_%s'    % (tar, str(dd[tar]['pcent_list'][index]).replace('.', 'p')))
             
             print (fp)
@@ -144,17 +148,18 @@ for str_tar, tar in tar_name_dd.items():
             hdp      = R.TH1F('hdp_%s_%s' %(tar, str(dd[tar]['pcent_list'][index]).replace('.', 'p')), '#delta for %s, %s GeV; #delta; Number of Entries/0.5' % (tarStr, dd[tar]['pcent_list'][index]),histo_data_dc[tar]['dp'][index].GetSize()-2, histo_data_dc[tar]['dp'][index].GetXaxis().GetXmin(),histo_data_dc[tar]['dp'][index].GetXaxis().GetXmax())
             t        = fp.Get("tree")
             nentries = t.GetEntries()
+
             #nentries = 10000
             
             mc_scaleFactor = np.loadtxt('/w/hallc-scifs17exp/xem2/abishek/monte-carlo/x-section/%s_%s.txt' %(str_tar, str(dd[tar]['pcent_list'][index]).replace('.','p')),unpack=True)
-
+            
             print (mc_scaleFactor)
             
-            for entry in range(10000):
+            for entry in range(nentries):
                 
                 t.GetEntry(entry)
                 if ((entry % 10000) == 0 and entry != 0) : print ('Analyzed %d events...' % entry)
-                #--------------------------
+                #---------------------------
                 # Accessing leaf of interest
                 #---------------------------
                 delta   = getattr(t, 'dppr')
@@ -167,22 +172,22 @@ for str_tar, tar in tar_name_dd.items():
                 born    = getattr(t, 'born')
                 rci     = getattr(t, 'rci')
                 fail_id = getattr(t, 'fail_id')
-    
+                
                 if fail_id ==0:
                     if delta>-10 and delta < 22:
                         hdp.Fill(delta,     born*mc_scaleFactor/rci)
-    
+                        
             histo_mc[tar]['dp'].append(hdp)
             #rof.Write()
         
+pprint (histo_mc['c12'])
 
-pprint (histo_mc['c12']['dp'][0])
-
-#gr = R.TGraphErrors()
-
-Mp     = 0.938
-eb     = 10.6
-thetai = 21.0
+#----------------------
+# Constant 
+#---------------------
+Mp     = 0.938  # Mass of proton
+eb     = 10.6   # Beam Energy
+thetai = 21.0   # Spectrometer Central Angle
   
 def cal_ep (delta):
     return( mom_val *(1+ delta/100))
@@ -199,44 +204,48 @@ xt = R.TGraph2D()  # here I creating Object for x-sec
 for i in range(len(ebeam)):
     xt.SetPoint(i, wsqr[i], theta[i], x_sec[i])
 
-gr = R.TGraphErrors()
-
 tar = tar_name_dd[InFileName]
 
 print (tar)
 
-
 #ax, ay, aerror = R.Double(0), R.Double(0), R.Double(0)
-
 #---------------------------------------
 # check for file 
 #---------------------------------------
-filePath = '/w/hallc-scifs17exp/xem2/abishek/monte-carlo/data-to-mc/xsec_eprime_%s.txt'%(InFileName);
- # As file at filePath is deleted now, so we should check if file exists or not not before deleting them
+filePath = 'xsec_eprime_%s.txt'%(InFileName)
+print (filePath)
+# As file at filePath is deleted now, so we should check if file exists or not not before deleting them
 if os.path.exists(filePath):
     os.remove(filePath)
 else:
     print("Can not delete the file as it doesn't exists")
 
 
-ep_list    = []
-xsec_list  = []
-error_list = []
-born_list  = []
-ratio_list = []
+ep_list        = []
+xsec_list      = []
+error_list     = []
+born_list      = []
+ratio_list     = []
+ratio_err_list = []
+xbj_list       = []
 
 for index, mom_val in enumerate(dd[tar]['pcent_list']):
-    print (tar)
     
     hdp_ratio = histo_data_dc[tar]['dp'][index].Clone("hdp_ratio")
+    hdp_ratio.Sumw2()
     hdp_ratio.Divide(histo_mc[tar]['dp'][index])
     
+    
     with open ("xsec_eprime_%s.txt" %(InFileName), "a") as f:
-        lst_xsec   = []
-        lst_eprime = []
-        lst_error  = []
-        lst_born   = []
-        lst_ratio  = []
+
+        lst_xsec      = []
+        lst_eprime    = []
+        lst_error     = []
+        lst_born      = []
+        lst_ratio     = []
+        lst_ratio_err = []
+        lst_xbj       = []
+
         for i in range (hdp_ratio.GetNbinsX()):
             
             delta  = hdp_ratio.GetXaxis().GetBinCenter(i+1)
@@ -248,23 +257,27 @@ for index, mom_val in enumerate(dd[tar]['pcent_list']):
             
             xsec   = hdp_ratio.GetBinContent(i+1) * born
             error  = hdp_ratio.GetBinError(i+1)   * born
+
             lst_xsec.append(xsec)
             lst_eprime.append(eprime)
             lst_error.append(error)
             lst_born.append(born)
-            lst_ratio.append(float(born/xsec))
+            lst_ratio.append(np.divide(xsec,born))
+            lst_ratio_err.append(hdp_ratio.GetBinError(i+1))
+            lst_xbj.append(xbj)
             f.write("{} {:>10} {:>15} {:>15}\n" .format(str(round (eprime,3)), str(round(xsec,3)), str(round(born,5)), str(round(error,5)) ))
+
         ep_list.append(lst_eprime)
         xsec_list.append(lst_xsec)
         error_list.append(lst_error)
         born_list.append(lst_born)
         ratio_list.append(lst_ratio)
-
-
+        xbj_list.append(lst_xbj)
+        ratio_err_list.append(lst_ratio_err)
             
 plt.figure(figsize=(15,8))
-#print (ep_list)
-#print (xsec_list)
+
+
 hmkr = ['r', 'g', 'k', 'b', 'm*']
 plt.tick_params(axis='both', which='minor', labelsize=18, direction = 'in')
 plt.tick_params(axis='both', which='major', labelsize=18, direction = 'in')
@@ -272,30 +285,43 @@ plt.minorticks_on()
 plt.grid(b=True, which= 'major', axis = 'both', linestyle='-', linewidth=1)
 
 for index, mom_val in enumerate(dd[tar]['pcent_list']):
-    plt.errorbar(ep_list[index], xsec_list[index], yerr=error_list[index], xerr = 0, markersize=7, linestyle='None', color = hmkr[index], marker = '^',label = '%s GeV' % str(dd[tar]['pcent_list'][index]))
-    plt.plot(ep_list[index], born_list[index],  color = 'm', marker = '.', linestyle ='None')
-plt.xlabel(r"\textbf {Eprime}",               fontsize =16)
+    #plt.errorbar(ep_list[index], xsec_list[index], yerr=error_list[index], xerr = 0, markersize=7, linestyle='None', color = hmkr[index], marker = '^',label = '%s GeV' % str(dd[tar]['pcent_list'][index]))
+    plt.errorbar(xbj_list[index], xsec_list[index], yerr=error_list[index], xerr = 0, markersize=4, linestyle='None', color = hmkr[index], marker = '^',label = '%s GeV' % str(dd[tar]['pcent_list'][index]))
+    if index ==0:
+        plt.plot(xbj_list[index], born_list[index],  'm--', label = 'bodek')
+    else:
+        plt.plot(xbj_list[index], born_list[index],  'm--')
+#plt.xlabel(r"\textbf {Eprime}",               fontsize =16)
+plt.xlabel(r"\textbf {X$_{bj}$}",              fontsize =16)
 plt.ylabel(r'$ \sigma^{%s} $' %(InFileName),  fontsize =22)
 plt.legend(prop={'size':16})
-#plt.savefig("new_xsec_eprime_%s.pdf" %InFileName)
-#plt.show()
+
+#plt.savefig("xsec_eprime_%s_%s.pdf" %(InFileName, sys.argv[1]))
+plt.savefig("xsec_xbj_%s_%s.pdf" %(InFileName, sys.argv[1]))
+
 
 plt.figure(figsize=(15,8))
 plt.tick_params(axis='both', which='minor', labelsize=18, direction = 'in')
 plt.tick_params(axis='both', which='major', labelsize=18, direction = 'in')
 plt.minorticks_on()
 plt.grid(b=True, which= 'major', axis = 'both', linestyle='-', linewidth=1)
+
+
+# Ratio plot for Data Over Born
 for index, mom_val in enumerate(dd[tar]['pcent_list']):
-    plt.plot(ep_list[index], ratio_list[index], markersize=7, linestyle='None', color = hmkr[index], marker = '.',label = '%s GeV' % str(dd[tar]['pcent_list'][index])  )
+    plt.errorbar(ep_list[index], ratio_err_list[index], yerr=error_list[index], xerr = 0,  markersize=7, linestyle='None', color = hmkr[index], marker = '.',label = '%s GeV' % str(dd[tar]['pcent_list'][index])  )
 plt.xlabel(r"\textbf {Eprime}", fontsize =16)
+#plt.xlabel(r"\textbf {X$_{bj}$}", fontsize =16)
 plt.ylabel(r'\textbf {ratio}',  fontsize =22)
+plt.title(r' \textbf{ %s ratio Data/born } ' %InFileName, fontsize = 16)
 plt.legend(prop={'size':16})
+plt.ylim(-.9, 1.1)
+plt.savefig("xsec_ratio_%s_%s.pdf" %(InFileName, sys.argv[1]))
 
 plt.show()
 
 rof.Close()
 dataFile.Close()
-#raw = input()
 
 
 #Anlysis time
