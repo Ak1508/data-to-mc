@@ -112,6 +112,13 @@ for tar, tar_dict in histo_data_dc.items():
                 histo = histo_data[tar][key][index].Clone('histo')
                 histo_data_dc[tar][key].append(histo)
 
+
+print (histo_data_dc['c12']['dp'][0].GetBinContent(1))
+
+#histo_data_dc['c12']['dp'][0].Sumw2()
+
+print (histo_data_dc['c12']['dp'][0].GetBinError(1))
+
 #----------------------------------------------------------------------#
 #             Creating Root File for MC                                #
 #----------------------------------------------------------------------#
@@ -180,7 +187,7 @@ for str_tar, tar in tar_name_dd.items():
             histo_mc[tar]['dp'].append(hdp)
             #rof.Write()
         
-pprint (histo_mc['c12'])
+pprint (histo_mc['c12']['dp'])
 
 #----------------------
 # Constant 
@@ -198,10 +205,59 @@ def cal_w2 (ep):
 def cal_xbj(ep) :
     return ((eb*ep*(1.0 - np.cos(np.deg2rad(thetai))))/(Mp*(eb - ep)))
 
-# def cal_err(e1, n1, e2, n2):
-#     return(np.sqrt(e1*np.sqrt(n2)+e2*np.sqrt(n1))/np.sqrt(n1+n2))
-    
+def cal_err(n1, e1, n2, e2):
+     return( n1/n2 * np.sqrt( (e1/n1)**2 + (e2/n2)**2) )
 
+'''    
+# for error handling
+lst_n1 = []
+lst_n2 = []
+lst_e1 = []
+lst_e2 = []
+
+lst_err = []
+
+for index, mom_val in enumerate(dd[tar]['pcent_list']):
+    n1 = []
+    n2 = []
+    e1 = []
+    e2 = []
+
+    err = []
+
+    hdp_ratio = histo_data_dc[tar]['dp'][index].Clone("hdp_ratio")
+    hdp_ratio.Divide(histo_mc[tar]['dp'][index])
+
+    for i in range (hdp_ratio.GetNbinsX()):
+        
+        a1 = histo_data_dc[tar]['dp'][index].GetBinContent(i+1)
+        n1.append(histo_data_dc[tar]['dp'][index].GetBinContent(i+1))
+
+        b1 = histo_mc[tar]['dp'][index].GetBinContent(i+1)
+        n2.append(histo_mc[tar]['dp'][index].GetBinContent(i+1))
+        
+        a1_err = histo_data_dc[tar]['dp'][index].GetBinError(i+1)
+
+        e1.append(histo_data_dc[tar]['dp'][index].GetBinError(i+1))
+
+        b1_err = histo_mc[tar]['dp'][index].GetBinError(i+1)
+        e2.append(histo_mc[tar]['dp'][index].GetBinError(i+1))
+
+        err.append(cal_err(a1, a1_err, b1, b1_err))
+
+    lst_n1.append(n1)
+    lst_n2.append(n2)
+    lst_e1.append(e1)
+    lst_e1.append(e2)
+
+    lst_err.append(err)
+
+print (lst_n1[0][0])
+print (lst_e1[0][0])
+
+print (lst_err[0][0])
+
+'''
 ebeam, wsqr, theta, x_sec, radCorrfactor = np.loadtxt('/w/hallc-scifs17exp/xem2/abishek/monte-carlo/rc-externals/output/rad-corr-data/%s_21_deg.dat' %(InFileName), delimiter = '\t', unpack = True)
 xt = R.TGraph2D()  # here I creating Object for x-sec 
 
@@ -216,6 +272,9 @@ print (tar)
 #---------------------------------------
 # check for file 
 #---------------------------------------
+
+
+'''
 filePath = 'xsec_eprime_%s.txt'%(InFileName)
 print (filePath)
 # As file at filePath is deleted now, so we should check if file exists or not not before deleting them
@@ -223,16 +282,23 @@ if os.path.exists(filePath):
     os.remove(filePath)
 else:
     print("Can not delete the file as it doesn't exists")
+'''
 
 
-ep_list        = []
-xsec_list      = []
-error_list     = []
-born_list      = []
-ratio_list     = []
-ratio_err_list = []
-xbj_list       = []
-delta_list     = []
+df = {}
+
+df[tar] = {}
+
+df [tar]['ep_list']        = []
+df [tar]['xsec_list']      = []
+df [tar]['error_list']     = []
+df [tar]['born_list']      = []
+df [tar]['ratio_list']     = []
+df [tar]['ratio_err_list'] = []
+df [tar]['xbj_list']       = []
+df [tar]['delta_list']     = []
+
+print (df)
 
 for index, mom_val in enumerate(dd[tar]['pcent_list']):
     
@@ -255,12 +321,13 @@ for index, mom_val in enumerate(dd[tar]['pcent_list']):
 
         for i in range (hdp_ratio.GetNbinsX()):
             
-            # n1 = histo_data_dc[tar]['dp'][index].GetBinContent(i+1)
-            # n2 = histo_mc[tar]['dp'][index].GetBinContent(i+1)-n1
-            
-            # e1 = np.sqrt(histo_data_dc[tar]['dp'][index].GetBinError(i+1))
+            n1 = histo_data_dc[tar]['dp'][index].GetBinContent(i+1)
 
-            # e2 = np.sqrt( histo_mc[tar]['dp'][index].GetBinError(i+1)) -e1
+            n2 = histo_mc[tar]['dp'][index].GetBinContent(i+1)
+            
+            e1 = histo_data_dc[tar]['dp'][index].GetBinError(i+1)
+
+            e2 = histo_mc[tar]['dp'][index].GetBinError(i+1)
 
         
             
@@ -274,28 +341,35 @@ for index, mom_val in enumerate(dd[tar]['pcent_list']):
             xsec   = hdp_ratio.GetBinContent(i+1) * born
             error  = hdp_ratio.GetBinError(i+1)   * born
 
-            #err    = cal_err(e1, n1, e2, n2)
+            err    = cal_err(n1, e1, n2, e2)
 
-            lst_xsec.append(xsec)
-            lst_eprime.append(eprime)
-            lst_error.append(error)
+            lst_xsec.append(round(xsec,4))
+            lst_eprime.append(round(eprime, 4))
+            lst_error.append(round(error,6))
             lst_born.append(born)
             lst_ratio.append(np.divide(xsec,born))
-            #lst_ratio_err.append(err)
-            lst_xbj.append(xbj)
-            lst_delta.append(delta)
+            lst_ratio_err.append(err)
+            lst_xbj.append(round(xbj,4))
+            lst_delta.append(round(delta,4))
 
             #f.write("{} {:>10} {:>15} {:>15}\n" .format(str(round (eprime,3)), str(round(xsec,3)), str(round(born,5)), str(round(error,5)) ))
 
-        ep_list.append(lst_eprime)
-        xsec_list.append(lst_xsec)
-        error_list.append(lst_error)
-        born_list.append(lst_born)
-        ratio_list.append(lst_ratio)
-        xbj_list.append(lst_xbj)
-        #ratio_err_list.append(lst_ratio_err)
-        delta_list.append(lst_delta)
-            
+        df [tar] ['ep_list'].append(lst_eprime)
+        df [tar] ['xsec_list'].append(lst_xsec)
+        df [tar] ['error_list'].append(lst_error)
+        df [tar] ['born_list'].append(lst_born)
+        df [tar] ['ratio_list'].append(lst_ratio)
+        df [tar] ['xbj_list'].append(lst_xbj)
+        df [tar] ['ratio_err_list'].append(lst_ratio_err)
+        df [tar] ['delta_list'].append(lst_delta)
+
+pickle.dump(df, open("%s.pkl" %InFileName, 'wb'))
+
+print (df['c12']['delta_list'][0][0]) 
+print (df['c12']['ratio_err_list'][0][0])
+
+   
+'''       
 plt.figure(figsize=(15,8))
 
 
@@ -342,6 +416,10 @@ plt.legend(prop={'size':16})
 plt.savefig("xsec_ratio_%s_%s.pdf" %(InFileName, sys.argv[1]))
 
 plt.show()
+'''
+
+
+
 
 rof.Close()
 dataFile.Close()
