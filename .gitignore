@@ -3,6 +3,7 @@
 *.root
 *.pdf
 *.txt
+*.pkl
 ratio/
 comparison/
 pass-1-comp/
