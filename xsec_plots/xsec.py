@@ -25,7 +25,7 @@ startTime = time.time()
 dFactor_hydrogen  = 0.262 # correction factor from dummy 
 dFactor_deuterium = 0.244
 
-dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/%s/shms_yield_ytar_p_m10.root" %sys.argv[1])
+dataFile = R.TFile("/w/hallc-scifs17exp/xem2/abishek/xem/%s/shms_yield_ngc.root" %sys.argv[1])
 
 dd       = pickle.load(open('/w/hallc-scifs17exp/xem2/abishek/xem/%s/dataDict.pkl' %sys.argv[1], 'rb'))
 
@@ -198,6 +198,10 @@ def cal_w2 (ep):
 def cal_xbj(ep) :
     return ((eb*ep*(1.0 - np.cos(np.deg2rad(thetai))))/(Mp*(eb - ep)))
 
+# def cal_err(e1, n1, e2, n2):
+#     return(np.sqrt(e1*np.sqrt(n2)+e2*np.sqrt(n1))/np.sqrt(n1+n2))
+    
+
 ebeam, wsqr, theta, x_sec, radCorrfactor = np.loadtxt('/w/hallc-scifs17exp/xem2/abishek/monte-carlo/rc-externals/output/rad-corr-data/%s_21_deg.dat' %(InFileName), delimiter = '\t', unpack = True)
 xt = R.TGraph2D()  # here I creating Object for x-sec 
 
@@ -228,11 +232,12 @@ born_list      = []
 ratio_list     = []
 ratio_err_list = []
 xbj_list       = []
+delta_list     = []
 
 for index, mom_val in enumerate(dd[tar]['pcent_list']):
     
     hdp_ratio = histo_data_dc[tar]['dp'][index].Clone("hdp_ratio")
-    hdp_ratio.Sumw2()
+    #hdp_ratio.Sumw2()
     hdp_ratio.Divide(histo_mc[tar]['dp'][index])
     
     
@@ -245,8 +250,19 @@ for index, mom_val in enumerate(dd[tar]['pcent_list']):
         lst_ratio     = []
         lst_ratio_err = []
         lst_xbj       = []
+        lst_delta     = []
+
 
         for i in range (hdp_ratio.GetNbinsX()):
+            
+            # n1 = histo_data_dc[tar]['dp'][index].GetBinContent(i+1)
+            # n2 = histo_mc[tar]['dp'][index].GetBinContent(i+1)-n1
+            
+            # e1 = np.sqrt(histo_data_dc[tar]['dp'][index].GetBinError(i+1))
+
+            # e2 = np.sqrt( histo_mc[tar]['dp'][index].GetBinError(i+1)) -e1
+
+        
             
             delta  = hdp_ratio.GetXaxis().GetBinCenter(i+1)
             eprime = cal_ep(delta)
@@ -258,14 +274,18 @@ for index, mom_val in enumerate(dd[tar]['pcent_list']):
             xsec   = hdp_ratio.GetBinContent(i+1) * born
             error  = hdp_ratio.GetBinError(i+1)   * born
 
+            #err    = cal_err(e1, n1, e2, n2)
+
             lst_xsec.append(xsec)
             lst_eprime.append(eprime)
             lst_error.append(error)
             lst_born.append(born)
             lst_ratio.append(np.divide(xsec,born))
-            lst_ratio_err.append(hdp_ratio.GetBinError(i+1))
+            #lst_ratio_err.append(err)
             lst_xbj.append(xbj)
-            f.write("{} {:>10} {:>15} {:>15}\n" .format(str(round (eprime,3)), str(round(xsec,3)), str(round(born,5)), str(round(error,5)) ))
+            lst_delta.append(delta)
+
+            #f.write("{} {:>10} {:>15} {:>15}\n" .format(str(round (eprime,3)), str(round(xsec,3)), str(round(born,5)), str(round(error,5)) ))
 
         ep_list.append(lst_eprime)
         xsec_list.append(lst_xsec)
@@ -273,7 +293,8 @@ for index, mom_val in enumerate(dd[tar]['pcent_list']):
         born_list.append(lst_born)
         ratio_list.append(lst_ratio)
         xbj_list.append(lst_xbj)
-        ratio_err_list.append(lst_ratio_err)
+        #ratio_err_list.append(lst_ratio_err)
+        delta_list.append(lst_delta)
             
 plt.figure(figsize=(15,8))
 
@@ -306,16 +327,18 @@ plt.tick_params(axis='both', which='major', labelsize=18, direction = 'in')
 plt.minorticks_on()
 plt.grid(b=True, which= 'major', axis = 'both', linestyle='-', linewidth=1)
 
-
+# :=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
 # Ratio plot for Data Over Born
+# :=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
+
 for index, mom_val in enumerate(dd[tar]['pcent_list']):
-    plt.errorbar(ep_list[index], ratio_err_list[index], yerr=error_list[index], xerr = 0,  markersize=7, linestyle='None', color = hmkr[index], marker = '.',label = '%s GeV' % str(dd[tar]['pcent_list'][index])  )
+    plt.errorbar(xbj_list[index], delta_list[index], yerr= 0 , xerr = 0,  markersize=7, linestyle='None', color = hmkr[index], marker = '.',label = '%s GeV' % str(dd[tar]['pcent_list'][index])  )
 plt.xlabel(r"\textbf {Eprime}", fontsize =16)
 #plt.xlabel(r"\textbf {X$_{bj}$}", fontsize =16)
 plt.ylabel(r'\textbf {ratio}',  fontsize =22)
 plt.title(r' \textbf{ %s ratio Data/born } ' %InFileName, fontsize = 16)
 plt.legend(prop={'size':16})
-plt.ylim(-.9, 1.1)
+#plt.ylim(0.8, 1.2)
 plt.savefig("xsec_ratio_%s_%s.pdf" %(InFileName, sys.argv[1]))
 
 plt.show()
